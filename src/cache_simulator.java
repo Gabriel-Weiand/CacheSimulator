@@ -1,23 +1,16 @@
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.*;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.Random;
 
 //input: cache_simulator <nsets> <bsize> <assoc> <substituição> <flag_saida> arquivo_de_entrada
 public class cache_simulator {
     public static final int ADDRESS_SIZE = 32;//bits
 
     public static void main(String[] args) {
-        args = new String[]{"1024", "4", "4", "r", "0", "vortex.in.sem.persons.bin"};//exemplo de input para nao ter q digitar no console toda vez
-        /*
-        offset=2bits
-        sets=log2(1024)=10 bits //total 4k
-        tag=32-12=20bits
-        tag do 0 ao 19
-        set do 20 ao 29
-        off do 29 ao 31
-         */
+        //cache_simulator 2 1 8 L 1 bin_100.bin
+        args = new String[]{"2", "1", "8", "L", "1", "src/bin_100.bin"};//exemplo de input para nao ter q digitar no console toda vez
         int accesses = 0;
         int hits=0;
         int misses=0;
@@ -36,54 +29,56 @@ public class cache_simulator {
                 byteCount++;
                 if (byteCount == 4) {//junta 4 bytes e separa do resto do input
                     accesses++;
-                    System.out.println(nova);
+                    //System.out.println(nova);
                     byteCount = 0;
                     //inputs.add(nova);
                     addresses.add(calcAddress(nova, dividers));//adiciona o endereço já separado em uma linked list de addresses
-                    calcAddress(nova, dividers).PrintAddress();
                     nova = "";
                 }
             }
-            System.out.println("Número de sets: " + args[0]);//args são os comandos digitados depois do java Main
-            System.out.println("Tamanho do bloco : " + args[1]);
-            System.out.println("Associatividade: " + args[2]);
-            System.out.println("Substituição: " + args[3]);
-            System.out.println("Flag: " + args[4]);
-            System.out.println("Arquivo: " + args[5]);
-            System.out.println("Acessos: " + accesses);
         } catch (IOException e) {
             e.printStackTrace();
         }
         int count = 0;
         LinkedList<LineIndex> cache = new LinkedList<>();//nossa cache
         for (int aux = 0; aux < Integer.parseInt(args[0]); aux++) {//cria todas linhas
-            cache = new LinkedList<>();
             LineIndex novaLinha = new LineIndex();
             LinkedList<TagVal> novasInfos = new LinkedList<>();
             for (int aux2 = 0; aux2 < Integer.parseInt(args[2]); aux2++) {//inicializa os Tagvals
                 novasInfos.add(new TagVal());
                 count++;
             }
-            novaLinha.setTagVals(novasInfos);
-            cache.add(novaLinha);
+            novaLinha.setTagVals(novasInfos);//seta
+            cache.add(novaLinha);//adiciona a linha na cache
         }
         for(int passaEndereco=0;passaEndereco<accesses;passaEndereco++) {//passa por todos endereços
             String tag=addresses.get(passaEndereco).getTag();
-            int index=Integer.parseInt(addresses.get(passaEndereco).getIndex(),2);
+            int index=0;
+            if(!addresses.get(passaEndereco).getIndex().equals("")){
+                index=Integer.parseInt(addresses.get(passaEndereco).getIndex(),2);
+            }
             boolean achoutag=false;
             int vals=0;//bits de validade positivos encontrados na linha
             TagVal atual;
+            TagVal hit=new TagVal();
             for(int percorrerLinha=0;percorrerLinha<Integer.parseInt(args[2]);percorrerLinha++) {//percorre linha
                 atual=cache.get(index).getTagVal(percorrerLinha);//procura tag
                 if(atual.getValid()){
                     vals++;
                 }
                 if(atual.getTag().equals(tag)) {
+                    hit=atual;
                     achoutag=true;
                 }
             }
             if(achoutag) {//hit
                 hits++;
+                if(args[3].equals("L")){
+                    if(vals==Integer.parseInt(args[2])){
+                        cache.get(index).getTagValLL().remove(hit);
+                        cache.get(index).getTagValLL().addLast(hit);
+                    }
+                }
             }else{//miss
                 if(vals!=Integer.parseInt(args[2])) {//miss compulsório
                     missesComp++;
@@ -95,13 +90,33 @@ public class cache_simulator {
                     }else{//miss de conflito
                         missesConflict++;
                     }//tratamento da falta
-
+                    switch(args[3]){
+                        case "R":
+                            random(cache.get(index),tag);
+                            break;
+                        case "L":
+                            fifo(cache.get(index),tag);
+                            break;
+                        case "F":
+                            fifo(cache.get(index),tag);
+                            break;
+                    }
                 }
             }
         }
-        System.out.println("tag até: " + dividers[0] + "\n" + "indice até: " + dividers[1]);
-    }
+        misses=missesCap+missesConflict+missesComp;
+        DecimalFormat numFrmt = new DecimalFormat("#.##");
+        double hitRate= (double) hits /accesses;
+        double missRate= (double) misses /accesses;
+        double compMissRate= (double) missesComp /misses;
+        double capMissRate= (double) missesCap /misses;
+        double confMissRate= (double) missesConflict /misses;
+        if(args[4].equals("1")){
+            System.out.print(numFrmt.format(accesses)+" "+numFrmt.format(hitRate)+" "+numFrmt.format(missRate)+" "+numFrmt.format(compMissRate)+" "+numFrmt.format(capMissRate)+" "+numFrmt.format(confMissRate));
+        }else{//formato livre
 
+        }
+    }
     public static int[] addressDividers(String[] args) {
         int offset = log2(Integer.parseInt(args[1]));
         int index = log2(Integer.parseInt(args[0]));
@@ -129,4 +144,15 @@ public class cache_simulator {
         return result;
     }//log base 2
 
+    public static void random(LineIndex linha, String tag){//substituição random
+        Random r = new Random();
+        int numero = r.nextInt(linha.linkedListSize());
+        linha.getTagVal(numero).setTag(tag);
+    }//substituição random
+
+    public static void fifo(LineIndex linha, String tag){
+        TagVal att=linha.getTagValLL().pollFirst();
+        att.setTag(tag);
+        linha.getTagValLL().addLast(att);
+    }//substituição fifo
 } 

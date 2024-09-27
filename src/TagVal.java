@@ -3,6 +3,7 @@ public class TagVal {
     private boolean valid;
     public TagVal() {
         this.valid = false;
+        this.tag = "";
     }
 
     public String getTag() {

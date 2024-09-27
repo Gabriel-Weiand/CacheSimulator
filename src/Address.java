@@ -19,8 +19,4 @@ public class Address {
     public String getOffset() {
         return offset;
     }
-
-    public void PrintAddress() {
-        System.out.println("Tag: " + tag+" Index: " + index+" Offset: " + offset);
-    }
 }
