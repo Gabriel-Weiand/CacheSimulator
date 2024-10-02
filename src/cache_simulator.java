@@ -10,7 +10,7 @@ public class cache_simulator {
 
     public static void main(String[] args) {
         //cache_simulator 2 1 8 L 1 bin_100.bin
-        args = new String[]{"2", "1", "8", "L", "1", "src/bin_100.bin"};//exemplo de input para nao ter q digitar no console toda vez
+        //args = new String[]{"1", "4", "32", "F", "0", "src/bin_10000.bin"};//exemplo de input para nao ter q digitar no console toda vez
         int accesses = 0;
         int hits=0;
         int misses=0;
@@ -114,7 +114,55 @@ public class cache_simulator {
         if(args[4].equals("1")){
             System.out.print(numFrmt.format(accesses)+" "+numFrmt.format(hitRate)+" "+numFrmt.format(missRate)+" "+numFrmt.format(compMissRate)+" "+numFrmt.format(capMissRate)+" "+numFrmt.format(confMissRate));
         }else{//formato livre
-
+            System.out.println("Acessos a memória: "+accesses);
+            switch(args[3]){
+                case "R":
+                    System.out.println("Política de substituição: Random");
+                    break;
+                case "L":
+                    System.out.println("Política de substituição: Last Recently Used");
+                    break;
+                case "F":
+                    System.out.println("Política de substituição: First In First Out");
+                    break;
+            }
+            System.out.println("Número de sets: "+args[0]);
+            System.out.println("Tamanho do bloco(em bytes): "+args[1]);
+            System.out.println("Associatividade: "+args[2]+" vias");
+            System.out.println("Hits: "+hits);
+            System.out.println("Taxa de hits: "+hitRate);
+            System.out.println("Misses: "+misses);
+            System.out.println("Taxa de misses: "+missRate);
+            System.out.println("Misses compulsórios: "+missesComp);
+            System.out.println("Taxa de misses compulsórios: "+compMissRate);
+            System.out.println("Misses de capacidade: "+missesCap);
+            System.out.println("Taxa de misses de capacidade: "+capMissRate);
+            System.out.println("Misses de conflito: "+missesConflict);
+            System.out.println("Taxa de misses de conflito: "+missesConflict);
+            System.out.println("Arquivo de entrada: "+args[5]);
+            System.out.println("          _.-\"\"\"-._        \n" +
+                    "         /  _   _  \\       \n" +
+                    "        /  (9) (9)  \\      \n" +
+                    "       /_,         ,_\\     \n" +
+                    "       | \\         / |     \n" +
+                    "_      \\  \\._____./  /  __ \n" +
+                    "\\`\\     \\   \\___/   / _|  \\\n" +
+                    " \\ `\\   /\\         /\\ \\   /\n" +
+                    "  |  `\\/ /`'-----'`\\ \\/  / \n" +
+                    "  |_|\\/ /           \\   /  \n" +
+                    "  /    /|           |\\_/   \n" +
+                    "  \\___/ |           | \\    \n" +
+                    "   \\ .  |           |  \\   \n" +
+                    "    \\|  |           |  |   \n" +
+                    "     |  `.         .'  |   \n" +
+                    "     \\    `-.___.-'    /   \n" +
+                    "     `\\       |       /'   \n" +
+                    "       `\\     |     /'     \n" +
+                    "    .-.-.`\\   |   /'.-.-.  \n" +
+                    "   (,(,(,`^   |   ^`,),),) \n" +
+                    "    '-'-'-----`-----'-'-'  ");
+            System.out.println("Trabalho orquestrado por Gabriel e Thiago");
+            System.out.println("Abraços...");
         }
     }
     public static int[] addressDividers(String[] args) {
